@@ -100,10 +100,6 @@ def WGrad_KKL(w,x,y,k,dk,Packy,alpha):
         for k in range(n+m):
             if k != j:
                 Tr3 = Tr3 + (log_ou_0([Lz[j]])[0] - log_ou_0([Lz[k]])[0])/(Lz[j] - Lz[k]) * W[j,:n] @ W[k,:n] * ( V_w @ W[j].reshape(n+m,1) @ W[k].reshape(1,n+m)  @ DV_w + DV_w.transpose() @ W[j].reshape(n+m,1) @ W[k].reshape(1,n+m)  @ V_w)
-    print(Trx)
-    print(Trz)
-    print(Tr3)
-    print()
     return  Trx - Trz - Tr3 # 
     
 #U[s] @ Kxz @ V[t]        @ np.diag(np.log(Lz)/Lz)                           

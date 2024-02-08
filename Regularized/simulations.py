@@ -20,6 +20,7 @@ h = 0.1 # stepsize gradient descent
 eps = 0.0001
 alpha = 0.01
 
+
 config_y = lambda : gy.rings(1, 1, 0.5, 1, m)
 
 
@@ -82,10 +83,11 @@ plt.title("sigma = " + str(sigm(x0,y)) + ", h = " + str(h))
 
 plt.figure()    
 plt.plot(l_J)
-plt.title("values of J")
+plt.title(r"values of $KKL_{\alpha}")
 
 plt.figure()
 plt.plot(Grad)
-plt.title("Values of the gradient of J")
+plt.title(r"Values of the gradient of $KKL_{\alpha}")
     
+
 
