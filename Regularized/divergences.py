@@ -33,11 +33,12 @@ def grad_MMD(x,y,k,dk):
 
 
 def log_ou_0(t):
-    t_log = np.zeros(len(t))
-    for i in range(len(t)):
-        if t[i] > 0:
-            t_log[i] = np.log(t[i])
-    return t_log
+    return np.where(t > 0., np.log(t), 0.)
+    # t_log = np.zeros(len(t))
+    # for i in range(len(t)):
+    #     if t[i] > 0:
+    #         t_log[i] = np.log(t[i])
+    # return t_log
 
 
 
@@ -48,103 +49,66 @@ def log_ou_0(t):
 def KKL(x,y,k,Packy,alpha):
     n = len(x)
     m = len(y) 
-    Kx = 1/n * np.array([[k(x[i],x[j]) for i in range(n)] for j in range(n)])
+    Kx = 1/n * k(x,x)
+    
     Ky = Packy[0] 
-    Kxy = np.array([[k(x[i],y[j]) for j in range(m)] for i in range(n)])
+    Kxy = k(x,y) 
     Lx,U = np.linalg.eig(Kx)
-    U = np.real(U).transpose()
+    U = np.real(U).T
     Lx = np.real(Lx)
     Trxy = 0
     
     K = np.concatenate([np.concatenate([alpha * Kx, np.sqrt(alpha*(1-alpha)/(n*m)) *Kxy],axis = 1),np.concatenate([np.sqrt(alpha*(1-alpha)/(n*m)) *Kxy.transpose(),(1-alpha)* Ky],axis = 1)],axis = 0)
-    Lw,W = np.linalg.eig(K)
-    W = W.transpose()
+    Lz,W = np.linalg.eig(K)
+    W = W.T
     
     A = np.concatenate([np.concatenate([1/alpha * np.identity(n), np.zeros((n,m))],axis = 1),np.concatenate([np.zeros((m,n)),np.zeros((m,m))],axis = 1)],axis = 0)
-    Klog = W.transpose() @ np.diag(log_ou_0(Lw)) @ W
                 
     Trxx = np.sum(Lx * log_ou_0(Lx))
-    Trxy = np.trace(A @ K @ Klog)
-    return Trxx - Trxy # 
+    Trxy = np.trace(A @ W.T @ np.diag(Lz * log_ou_0(Lz)) @ W) #K @ Klog)
+    return Trxx - Trxy 
 
 #(log_ou_0([Lz[t]])[0]
 #Wasserstein Gradient of KKL
 
 
-def WGrad_KKL(w,x,y,k,dk,Packy,alpha):
+def WGrad_KKL(w,x,y,k,dk,Packy,alpha,sigma):
     n = len(x)
     m = len(y)
     
-    Kx = 1/n * np.array([[k(x[i],x[j]) for i in range(n)] for j in range(n)])
+    
+    Kx = 1/n * k(x,x) 
     Lx,U = np.linalg.eig(Kx)
-    U = U.transpose()
-    Kx_log = U.transpose() @ np.diag(log_ou_0(Lx)) @ U
-    U_w = np.array([1/np.sqrt(n) * k(w,x[i]) for i in range(n)])
-    DU_w = np.array([1/ np.sqrt(n) * dk(w,x[i]) for i in range(n)])
+    U = U.T
+    logLx = log_ou_0(Lx)
+    
+    U_w = 1/np.sqrt(n) * k(w[None,:],x)[0] 
+    DU_w = (x - w[None,:])/sigma**2 * U_w[:,None] # ONLY FOR THE GAUSSIAN KERNEL
+    #DU_w = 1/ np.sqrt(n) * dk(w[None,:],x)[0]
     
     Ky = Packy[0] 
-    Kxy = np.array([[k(x[i],y[j]) for j in range(m)] for i in range(n)])
+    Kxy = k(x,y)
+    
     K = np.concatenate([np.concatenate([alpha * Kx, np.sqrt(alpha*(1-alpha)/(n*m)) *Kxy],axis = 1),np.concatenate([np.sqrt(alpha*(1-alpha)/(n*m)) *Kxy.transpose(),(1-alpha)* Ky],axis = 1)],axis = 0)
     Lz,W = np.linalg.eig(K)
     W = W.transpose()
-    K_log = W.transpose() @ np.diag(log_ou_0(Lz)) @ W
-    V_w = np.concatenate([[np.sqrt(alpha/n) * k(w,x[i]) for i in range(n)], [np.sqrt((1-alpha)/m) *k(w,y[j]) for j in range(m)]])
-    DV_w = np.concatenate([[np.sqrt(alpha/n) * dk(w,x[i]) for i in range(n)],[np.sqrt((1-alpha)/m) * dk(w,y[j]) for j in range(m)]])
-
-    Trx = (U_w @ U.transpose() @ np.diag(log_ou_0(Lx)/Lx)  @ U @ DU_w) + (DU_w.transpose() @ U.transpose() @ np.diag(log_ou_0(Lx)/Lx)  @ U @ U_w)
-    Trz = (V_w @ W.transpose() @ np.diag(log_ou_0(Lz)/Lz) @ W @ DV_w) + (DV_w.transpose() @ W.transpose() @ np.diag(log_ou_0(Lz)/Lz) @ W @ V_w)
-    Tr3 = 0
-    for j in range(n+m):
-        Tr3 = Tr3 + np.linalg.norm(W[j])**2/Lz[j] *( V_w @ W[j].reshape(n+m,1) @ W[j].reshape(1,n+m) @ DV_w + DV_w.transpose() @ W[j].reshape(n+m,1) @ W[j].reshape(1,n+m) @ V_w)
-        #Tr3 = Tr3 + np.linalg.norm(W[j])**2/Lz[j] * np.array([np.trace(W[j].reshape(n+m,1) @ W[j].reshape(1,n+m) @ (V_w.reshape(n+m,1) @ DV_w[:,0].reshape(1,n+m) + DV_w[:,0].reshape(n+m,1) @ V_w.reshape(1,n+m))),np.trace(W[j].reshape(n+m,1) @ W[j].reshape(1,n+m) @ (V_w.reshape(n+m,1) @ DV_w[:,1].reshape(1,n+m) + DV_w[:,1].reshape(n+m,1) @ V_w.reshape(1,n+m)))])
-        for k in range(n+m):
-            if k != j:
-                Tr3 = Tr3 + (log_ou_0([Lz[j]])[0] - log_ou_0([Lz[k]])[0])/(Lz[j] - Lz[k]) * W[j,:n] @ W[k,:n] * ( V_w @ W[j].reshape(n+m,1) @ W[k].reshape(1,n+m)  @ DV_w + DV_w.transpose() @ W[j].reshape(n+m,1) @ W[k].reshape(1,n+m)  @ V_w)
-    return  Trx - Trz - Tr3 # 
+    logLz = log_ou_0(Lz)
     
-#U[s] @ Kxz @ V[t]        @ np.diag(np.log(Lz)/Lz)                           
+    V_w = np.concatenate([np.sqrt(alpha) * U_w,np.sqrt((1-alpha)/m) * k(w[None,:],y)[0]]) 
+    DV_w = (np.concatenate([x,y]) - w[None,:])/sigma**2 * V_w[:,None] #only for gaussian kernel
+    #DV_w = np.concatenate([np.sqrt(alpha) * DU_w,np.sqrt((1-alpha)/m) * dk(w[None,:],y)[0]]) #np.concatenate([[np.sqrt(alpha/n) * dk(w,x[i]) for i in range(n)],[np.sqrt((1-alpha)/m) * dk(w,y[j]) for j in range(m)]])
+    
+    VW = V_w @ W.T 
+    DVW = W @ DV_w
+    
+    Trx = 2 * U_w @ U.T @ np.diag(logLx/Lx)  @ U @ DU_w 
+    Trz = 2 * VW @ np.diag(logLz/Lz) @ DVW 
+    Tr3 = 2 * VW @ np.diag(np.linalg.norm(W[:,:n],axis =1)**2 / Lz) @ DVW
+    Tr4 = 2 * VW @ ((logLz[:,None] - logLz[None,:]) / (Lz[:,None] - Lz[None,:] + np.identity(n+m)) * (W[:, :n] @ W.T[:n,:])) @ DVW
+    
+    return  Trx - Trz - Tr3 - Tr4 # 
     
 
-# def WGrad_KKL(w,x,y,k,dk,Packy,alpha):
-#     n = len(x)
-#     m = len(y)
-#     Kx = 1/n * np.array([[k(x[i],x[j]) for i in range(n)] for j in range(n)])
-#     Ky = Packy[0] #1/m * np.array([[k(y[i],y[j]) for i in range(m)] for j in range(m)])
-#     Kxy = np.array([[k(x[i],y[j]) for j in range(m)] for i in range(n)])
-#     Kz = np.concatenate([np.concatenate([alpha * Kx, alpha/n *Kxy],axis = 1),np.concatenate([(1-alpha)/m *Kxy.transpose(),(1-alpha)* Ky],axis = 1)],axis = 0)
-#     Kxz = np.concatenate([n*Kx, Kxy],axis = 1)
-#     Lx,U = np.linalg.eig(Kx)
-#     U = U.transpose()
-#     Lx = np.real(Lx)
-#     Lz,V = np.linalg.eig(Kz) 
-#     V = V.transpose()
-#     Lz = np.real(Lz)
-#     Kwx = np.array([k(w,x[i]) for i in range(n)]).transpose()
-#     Kwy = np.array([k(w,y[j]) for j in range(m)]).transpose()
-#     Kwz = np.concatenate([Kwx,Kwy])
-#     DKx = np.array([dk(w,x[i]) for i in range(n)]).transpose()
-#     DKy = np.array([dk(w,y[j]) for j in range(m)]).transpose()
-#     DKz = np.concatenate([DKx.transpose(),DKy.transpose()]).transpose()
-#     Trwx = 0
-#     Trwz = 0 
-#     Tr3 = 0
-#     for s in range(n):
-#         Trwx = Trwx + log_ou_0([Lx[s]])[0] / Lx[s] * 2 * (U[s] @ Kwx)* (DKx @ U[s]) 
-#         #print(U[s] @ (n * Kx) @ U[s])
-#     for t in range(m):
-#         Trwz = Trwz + log_ou_0([Lz[t]])[0] / (Lz[t] *(n/alpha * np.linalg.norm(V[t][:n])**2 + m/(1-alpha) * np.linalg.norm(V[t][n:])**2)) * 2 * (V[t] @ Kwz)* (DKz @ V[t]) 
-        
-#     for s in range(n):
-#         for t in range(n+m):
-#             if Lz[t] > 1e-15 and Lx[s] > 0:
-#                 Tr3 = Tr3 + 1/(Lz[t]**2 * (n/alpha * np.linalg.norm(V[t][:n])**2 + m/(1-alpha) * np.linalg.norm(V[t][n:])**2)) *  (n/alpha *Lz[t]* U[s] @ V[t][:n]) * ((U[s] @ Kwx) * (DKz @ V[t]) + (DKx @ U[s]) * (V[t] @ Kwz))
-#                 # if np.linalg.norm(1/(Lz[t]**2 * (n/alpha * np.linalg.norm(V[t][:n])**2 + m/(1-alpha) * np.linalg.norm(V[t][n:])**2)) *  (U[s] @ Kxz @ V[t]) * ((U[s] @ Kwx) * (DKz @ V[t]) + (DKx @ U[s]) * (V[t] @ Kwz))) > 50:
-#                 #     print(U[s] @ Kxz @ V[t])
-#                 #     print((n/alpha * Lz[t] * U[s] @ V[t][:n]))
-#                 #     print(np.linalg.norm(((U[s] @ Kwx) * (DKz @ V[t]) + (DKx @ U[s]) * (V[t] @ Kwz))))
-#                 #     print(Lz[t])
-#                 #     print()
-#     return 1/n * Trwx  -  Trwz #- alpha/n * Tr3
       
 
 

@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as scs
 
+
 def gradient_descent(J,dJ,x0,h,eps,n_it_max):
     x = x0 
     grad = dJ(x)
@@ -10,8 +11,9 @@ def gradient_descent(J,dJ,x0,h,eps,n_it_max):
     liste_J = []
     Grad = []
     while np.linalg.norm(grad) > eps and i < n_it_max:
+        print("hop")
         liste_J.append(J(x))
-        y = x + 0 * scs.multivariate_normal.rvs(np.zeros(2),np.identity(2),len(x))
+        y = x #+ 0 * scs.multivariate_normal.rvs(np.zeros(2),np.identity(2),len(x))
         grad = dJ(y)
         Grad.append(np.linalg.norm(grad))
         x = x - h * grad

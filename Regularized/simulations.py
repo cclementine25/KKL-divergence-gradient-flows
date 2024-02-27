@@ -13,41 +13,42 @@ import generate_y as gy
 ##############################
 
 d = 2 #dimension of the particles 
-n = 20 # nombre de particules pour q
-m = 20 # nombre de particules pour p
-T = 60 # nombre d'itérations
-h = 0.1 # stepsize gradient descent
+n = 100 # nombre de particules pour q
+m = 100 # nombre de particules pour p
+T = 10 # nombre d'itérations
+h = 0.01 # stepsize gradient descent
 eps = 0.0001
-alpha = 0.01
+alpha = 0.1
 
 
-config_y = lambda : gy.rings(1, 1, 0.5, 1, m)
+config_y = lambda : gy.shape("oiseau.jpg", m)
+
 
 
 ####### INITIAL DISTRIBUTIONS P AND Q  ########
 
 #x0 = scs.multivariate_normal.rvs(gy.mux,gy.Sigmax,n)
-#x0 = scs.multivariate_normal.rvs(0.1 *gy.mux,0.02*np.identity(2),n) 
-x0= scs.multivariate_normal.rvs(np.array([np.cos(-3 * np.pi/4),np.sin(-3* np.pi/4)]),0.01 * np.identity(2),n)
+#x0 = scs.multivariate_normal.rvs(gy.mux,0.02*np.identity(2),n) 
+x0= scs.multivariate_normal.rvs( 0.5 * np.array([np.cos(-3 * np.pi/4),np.sin(-3* np.pi/4)]),0.01 * np.identity(2),n)
 y = config_y()
 
 
 ### KERNEL ###
-sigm = lambda X,Y : 1 #np.max(np.linalg.norm(X-Y,axis = 1)) / (np.sqrt(1000 * np.log(10))) # np.abs(np.mean(np.linalg.norm(X,axis = 1)) - np.mean(np.linalg.norm(Y,axis = 1)))#max(2,np.linalg.norm(np.mean(x) - np.mean(y)))
-k = lambda x,y,s :  kl.k_gauss(x,y,s)
-dk = lambda x,y,s : kl.dk_gauss(x,y,s)
+sigma = 0.5 #np.max(np.linalg.norm(X-Y,axis = 1)) / (np.sqrt(1000 * np.log(10))) # np.abs(np.mean(np.linalg.norm(X,axis = 1)) - np.mean(np.linalg.norm(Y,axis = 1)))#max(2,np.linalg.norm(np.mean(x) - np.mean(y)))
+k = lambda x,y :  kl.k_gauss(x,y,sigma)
+dk = lambda x,y : kl.dk_gauss(x,y,sigma)
 
 
 #### Matrice Ky, eigenvalues and eigenvectors ####
-Ky = 1/m * np.array([[k(y[i],y[j],sigm(x0,y)) for i in range(m)] for j in range(m)])
+Ky = 1/m * k(y,y) #1/m * np.array([[k(y[i],y[j],sigm(x0,y)) for i in range(m)] for j in range(m)])
 Ly,V = np.linalg.eig(Ky)
 V = V.transpose()
 Ly = np.real(Ly)
 Packy = [Ky,Ly,V]
 
 #### DIVERGENCE ####
-J = lambda x : dv.KKL(x, y, lambda u,v : k(u,v,sigm(x,y)),Packy,alpha) 
-dJ = lambda x : np.array([dv.WGrad_KKL(x[i],x, y,lambda u,v : k(u,v,sigm(x,y)), lambda u,v : dk(u,v,sigm(x,y)),Packy,alpha) for i in range(n)])
+J = lambda x : dv.KKL(x, y, k, Packy, alpha) 
+dJ = lambda x : np.array([dv.WGrad_KKL(x[i],x, y,k, dk,Packy,alpha,sigma) for i in range(n)])
 
 
 
@@ -76,7 +77,9 @@ plt.figure()
 #plt.axis([-3,3.5,-4,1])
 plt.scatter(y[:,0],y[:,1],color = "orange")  
 plt.scatter(X[-1,:,0], X[-1,:,1])
-plt.title("sigma = " + str(sigm(x0,y)) + ", h = " + str(h))
+plt.title("sigma = " + str(sigma) + ", h = " + str(h))
+
+
 
 
 

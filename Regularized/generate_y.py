@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.stats as scs 
-import shapes as sh
+#import shapes as sh
 import sklearn
 import sklearn.datasets
 
