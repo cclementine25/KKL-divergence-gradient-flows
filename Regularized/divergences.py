@@ -33,7 +33,7 @@ def grad_MMD(x,y,k,dk):
 
 
 def log_ou_0(t):
-    return np.where(t > 0., np.log(t), 0.)
+    return np.where(t > 0, np.log(t), 0.)
     # t_log = np.zeros(len(t))
     # for i in range(len(t)):
     #     if t[i] > 0:
@@ -50,6 +50,7 @@ def KKL(x,y,k,Packy,alpha):
     n = len(x)
     m = len(y) 
     Kx = 1/n * k(x,x)
+    
     
     Ky = Packy[0] 
     Kxy = k(x,y) 
@@ -72,27 +73,31 @@ def KKL(x,y,k,Packy,alpha):
 #Wasserstein Gradient of KKL
 
 
-def WGrad_KKL(w,x,y,k,dk,Packy,alpha,sigma):
+def WGrad_KKL0(w,x,y,k,dk,Packy,alpha,sigma):
     n = len(x)
     m = len(y)
     
-    
-    Kx = 1/n * k(x,x) 
+    Kx = 1/n * k(x,x)
     Lx,U = np.linalg.eig(Kx)
+    Lx = np.real(Lx)
+    U = np.real(U)
     U = U.T
     logLx = log_ou_0(Lx)
-    
-    U_w = 1/np.sqrt(n) * k(w[None,:],x)[0] 
-    DU_w = (x - w[None,:])/sigma**2 * U_w[:,None] # ONLY FOR THE GAUSSIAN KERNEL
-    #DU_w = 1/ np.sqrt(n) * dk(w[None,:],x)[0]
     
     Ky = Packy[0] 
     Kxy = k(x,y)
     
     K = np.concatenate([np.concatenate([alpha * Kx, np.sqrt(alpha*(1-alpha)/(n*m)) *Kxy],axis = 1),np.concatenate([np.sqrt(alpha*(1-alpha)/(n*m)) *Kxy.transpose(),(1-alpha)* Ky],axis = 1)],axis = 0)
+    K = K 
     Lz,W = np.linalg.eig(K)
+    Lz = np.real(Lz)
+    W = np.real(W)
     W = W.transpose()
     logLz = log_ou_0(Lz)
+
+    U_w = 1/np.sqrt(n) * k(w[None,:],x)[0] 
+    DU_w = (x - w[None,:])/sigma**2 * U_w[:,None] # ONLY FOR THE GAUSSIAN KERNEL
+    #DU_w = 1/ np.sqrt(n) * dk(w[None,:],x)[0]
     
     V_w = np.concatenate([np.sqrt(alpha) * U_w,np.sqrt((1-alpha)/m) * k(w[None,:],y)[0]]) 
     DV_w = (np.concatenate([x,y]) - w[None,:])/sigma**2 * V_w[:,None] #only for gaussian kernel
@@ -102,8 +107,88 @@ def WGrad_KKL(w,x,y,k,dk,Packy,alpha,sigma):
     DVW = W @ DV_w
     
     Trx = 2 * U_w @ U.T @ np.diag(logLx/Lx)  @ U @ DU_w 
+    Trz = 2 * VW @ (np.diag(logLz/(Lz+1e-9)) + (logLz[:,None] - logLz[None,:]) / (Lz[:,None] - Lz[None,:] + np.identity(n+m) + 1e-9 * np.ones((n+m,n+m))) * (W[:, :n] @ W.T[:n,:]) + np.diag(np.linalg.norm(W[:,:n],axis =1)**2 / Lz)) @ DVW # + np.diag(np.linalg.norm(W[:,:n],axis =1)**2 / Lz) + ((logLz[:,None] - logLz[None,:]) / (Lz[:,None] - Lz[None,:] + np.identity(n+m)) * (W[:, :n] @ W.T[:n,:]))) @ DVW
+    #Tr3 = 2 * VW @ np.diag(np.linalg.norm(W[:,:n],axis =1)**2 / Lz) @ DVW
+    #Tr4 = 2 * VW @ ((logLz[:,None] - logLz[None,:]) / (Lz[:,None] - Lz[None,:] + np.identity(n+m) + 1e-9 * np.ones((n+m,n+m))) * (W[:, :n] @ W.T[:n,:])) @ DVW
+    
+    return  Trx - Trz #- Tr3 - Tr4 
+
+def WGrad_KKL(x,y,k,dk,Packy,alpha,sigma):
+    n = len(x)
+    m = len(y)
+    
+    Kx = 1/n * k(x,x)
+    Lx,U = np.linalg.eig(Kx)
+    Lx = np.real(Lx)
+    U = np.real(U)
+    U = U.T
+    logLx = log_ou_0(Lx)
+    
+    Ky = Packy[0] 
+    Kxy = k(x,y)
+    
+    K = np.concatenate([np.concatenate([alpha * Kx, np.sqrt(alpha*(1-alpha)/(n*m)) *Kxy],axis = 1),np.concatenate([np.sqrt(alpha*(1-alpha)/(n*m)) *Kxy.transpose(),(1-alpha)* Ky],axis = 1)],axis = 0)
+    K = K 
+    Lz,W = np.linalg.eig(K)
+    Lz = np.real(Lz)
+    W = np.real(W)
+    W = W.transpose()
+    logLz = log_ou_0(Lz)
+    T = np.zeros((n,2))
+    for i in range(n):
+        U_w = 1/np.sqrt(n) * k(x[i][None,:],x)[0] 
+        DU_w = (x - x[i][None,:])/sigma**2 * U_w[:,None] # ONLY FOR THE GAUSSIAN KERNEL
+        #DU_w = 1/ np.sqrt(n) * dk(w[None,:],x)[0]
+        
+        V_w = np.concatenate([np.sqrt(alpha) * U_w,np.sqrt((1-alpha)/m) * k(x[i][None,:],y)[0]]) 
+        DV_w = (np.concatenate([x,y]) - x[i][None,:])/sigma**2 * V_w[:,None] #only for gaussian kernel
+        #DV_w = np.concatenate([np.sqrt(alpha) * DU_w,np.sqrt((1-alpha)/m) * dk(w[None,:],y)[0]]) #np.concatenate([[np.sqrt(alpha/n) * dk(w,x[i]) for i in range(n)],[np.sqrt((1-alpha)/m) * dk(w,y[j]) for j in range(m)]])
+        
+        VW = V_w @ W.T 
+        DVW = W @ DV_w
+        
+        Trx = 2 * U_w @ U.T @ np.diag(logLx/Lx)  @ U @ DU_w 
+        Trz = 2 * VW @ (np.diag(logLz/(Lz+1e-9)) + (logLz[:,None] - logLz[None,:]) / (Lz[:,None] - Lz[None,:] + np.identity(n+m) + 1e-9 * np.ones((n+m,n+m))) * (W[:, :n] @ W.T[:n,:]) + np.diag(np.linalg.norm(W[:,:n],axis =1)**2 / Lz)) @ DVW # + np.diag(np.linalg.norm(W[:,:n],axis =1)**2 / Lz) + ((logLz[:,None] - logLz[None,:]) / (Lz[:,None] - Lz[None,:] + np.identity(n+m)) * (W[:, :n] @ W.T[:n,:]))) @ DVW
+        T[i] = Trx - Trz
+    return  T #- Tr3 - Tr4 
+    
+def WGrad_KKL_2(w,x,y,k,dk,Packy,alpha,sigma):
+    n = len(x)
+    m = len(y)
+    
+    Kx = 1/n * k(x,x) 
+    Lx,U = np.linalg.eig(Kx)
+    U = U.T
+    logLx = log_ou_0(Lx)
+    
+    U_w = 1/np.sqrt(n) * k(w,x)
+    DU_w = (x[None,:,:] - w[:,None,:])/sigma**2 * U_w[:,:,None] # ONLY FOR THE GAUSSIAN KERNEL
+    #DU_w = 1/ np.sqrt(n) * dk(w[None,:],x)[0]
+    
+    Ky = Packy[0] 
+    Kxy = k(x,y)
+    
+    K = np.concatenate([np.concatenate([alpha * Kx, np.sqrt(alpha*(1-alpha)/(n*m)) *Kxy],axis = 1),np.concatenate([np.sqrt(alpha*(1-alpha)/(n*m)) *Kxy.transpose(),(1-alpha)* Ky],axis = 1)],axis = 0)
+    Lz,W = np.linalg.eig(K)
+    W = W.transpose()
+    logLz = log_ou_0(Lz)
+    print(U_w.shape)
+    print(DU_w.shape)
+    print()
+    
+    V_w = np.concatenate([np.sqrt(alpha) * U_w,np.sqrt((1-alpha)/m) * k(w,y)],axis=1) 
+    DV_w = (np.concatenate([x,y])[None,:,:] - w[:,None,:])/sigma**2 * V_w[:,:,None] #only for gaussian kernel
+    #DV_w = np.concatenate([np.sqrt(alpha) * DU_w,np.sqrt((1-alpha)/m) * dk(w[None,:],y)[0]]) #np.concatenate([[np.sqrt(alpha/n) * dk(w,x[i]) for i in range(n)],[np.sqrt((1-alpha)/m) * dk(w,y[j]) for j in range(m)]])
+    print(V_w.shape)
+    print(DV_w.shape)
+    VW = (W @ V_w.T).T
+    DVW = np.concatenate([(W @ DV_w[:,:,0].T).T[:,:,None],(W @ DV_w[:,:,0].T).T[:,:,None]],axis = 2)
+    
+    
+    Trx = 2 * U_w @ U.T @ np.diag(logLx/Lx) @ U @ DU_w 
     Trz = 2 * VW @ np.diag(logLz/Lz) @ DVW 
-    Tr3 = 2 * VW @ np.diag(np.linalg.norm(W[:,:n],axis =1)**2 / Lz) @ DVW
+    Tr3 = 2 * VW @ np.diag(np.linalg.norm(W[:,:n],axis = 1)**2 / Lz) @ DVW
+    #Trr3 =  
     Tr4 = 2 * VW @ ((logLz[:,None] - logLz[None,:]) / (Lz[:,None] - Lz[None,:] + np.identity(n+m)) * (W[:, :n] @ W.T[:n,:])) @ DVW
     
     return  Trx - Trz - Tr3 - Tr4 # 
@@ -111,39 +196,14 @@ def WGrad_KKL(w,x,y,k,dk,Packy,alpha,sigma):
 
       
 
-
-######## Kernel density estimation ###############
-
-#base distribution sample
-x_tau = scs.multivariate_normal.rvs(np.zeros(2),np.identity(2),100)    
-
-
-def h(x,y,k):
-    return np.mean(np.array([k(x,x_tau[i]) * k(y,x_tau[i]) * np.exp(np.linalg.norm(x_tau[i])) /(np.sqrt(2 * np.pi)) for i in range(len(x_tau))]))
-    
-    
-
-def DE(x,k,y):
-    n = len(x)
-    return 1/n * np.sum(np.array([h(x[i],y,k) for i in range(n)]))
-
-def KDE(x, y, k):
-    n = len(x)
-    Q = np.array([DE(x,k,x[i]) for i in range(n)])
-    P = np.array([DE(y,k,x[i]) for i in range(n)])
-    return 1/n * np.sum(np.log(Q) * Q - np.log(P) * Q)
+def energy_distance(x,y):
+    XX = np.linalg.norm((x[:,None] - x[None,:]),axis = 2)
+    YY = np.linalg.norm((y[:,None] - y[None,:]),axis = 2)
+    XY = np.linalg.norm((x[:,None] - y[None,:]),axis = 2)
+    return -np.mean(XX) - np.mean(YY) + 2 * np.mean(XY)
     
     
     
-######### TRACE #######################
-
-def K_trace(x,k):
-    n = len(x)
-    Kx = 1/n * np.array([[k(x[i],x[j]) for i in range(n)] for j in range(n)])
-    Lambdx,_ = np.linalg.eig(Kx)
-    return np.sum(Lambdx)
-
-
-#######################OTHER SHAPES############
+    
 
 

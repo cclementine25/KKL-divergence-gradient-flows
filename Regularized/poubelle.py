@@ -262,3 +262,43 @@
 #                 #     print(Lz[t])
 #                 #     print()
 #     return 1/n * Trwx  -  Trwz #- alpha/n * Tr3
+
+
+
+0000000000000000000000000000000000000000000000000000000000000
+
+
+# ######## Kernel density estimation ###############
+
+# #base distribution sample
+# x_tau = scs.multivariate_normal.rvs(np.zeros(2),np.identity(2),100)    
+
+
+# def h(x,y,k):
+#     return np.mean(np.array([k(x,x_tau[i]) * k(y,x_tau[i]) * np.exp(np.linalg.norm(x_tau[i])) /(np.sqrt(2 * np.pi)) for i in range(len(x_tau))]))
+    
+    
+
+# def DE(x,k,y):
+#     n = len(x)
+#     return 1/n * np.sum(np.array([h(x[i],y,k) for i in range(n)]))
+
+# def KDE(x, y, k):
+#     n = len(x)
+#     Q = np.array([DE(x,k,x[i]) for i in range(n)])
+#     P = np.array([DE(y,k,x[i]) for i in range(n)])
+#     return 1/n * np.sum(np.log(Q) * Q - np.log(P) * Q)
+    
+    
+    
+# ######### TRACE #######################
+
+# def K_trace(x,k):
+#     n = len(x)
+#     Kx = 1/n * np.array([[k(x[i],x[j]) for i in range(n)] for j in range(n)])
+#     Lambdx,_ = np.linalg.eig(Kx)
+#     return np.sum(Lambdx)
+
+
+# #######################OTHER SHAPES############
+
