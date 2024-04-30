@@ -17,12 +17,12 @@ d = 2 #dimension of the particles
 n = 100 # nombre de particules pour q
 m = 100 # nombre de particules pour p
 T = 300 # nombre d'itérations
-h = 0.07 # stepsize gradient descent
+h = 0.03 # stepsize gradient descent
 eps = 0.0001
 alpha = 0.01
 
 
-config_y = lambda : gy.rings(1, 1, 0.5, 3, m)
+config_y = lambda : gy.shape("etoile.jpg",m)
 
 
 
@@ -35,7 +35,7 @@ y = config_y()
 
 
 ### KERNEL ###
-sigma = 1 #np.max(np.linalg.norm(X-Y,axis = 1)) / (np.sqrt(1000 * np.log(10))) # np.abs(np.mean(np.linalg.norm(X,axis = 1)) - np.mean(np.linalg.norm(Y,axis = 1)))#max(2,np.linalg.norm(np.mean(x) - np.mean(y)))
+sigma = 0.4 #np.max(np.linalg.norm(X-Y,axis = 1)) / (np.sqrt(1000 * np.log(10))) # np.abs(np.mean(np.linalg.norm(X,axis = 1)) - np.mean(np.linalg.norm(Y,axis = 1)))#max(2,np.linalg.norm(np.mean(x) - np.mean(y)))
 k = lambda x,y :  kl.k_gauss(x,y,sigma)
 dk = lambda x,y : kl.dk_gauss(x,y,sigma)
 
