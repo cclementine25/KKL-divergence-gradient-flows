@@ -10,14 +10,14 @@ import generate_y as gy
 import cProfile
 
 d = 2 #dimension of the particles 
-n = 50 #nombre de particules pour p
-m = 50 #nombre de particules pour q
+n = 30 #nombre de particules pour p
+m = 30 #nombre de particules pour q
 alpha = 0.1
 
 ########## EXPE ##########
 expe_var_mu = False
-expe_var_n = False
-linesearch = True
+expe_var_n = True
+linesearch = False
 test_lipschitz = False
 expe_var_alpha = False
 
