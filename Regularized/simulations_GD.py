@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats as scs
 import matplotlib.pyplot as plt
+import time
 #import scipy
 
 import divergences as dv
@@ -14,15 +15,15 @@ import cProfile
 ##############################
 
 d = 2 #dimension of the particles 
-n = 150 # nombre de particules pour q
-m = 150 # nombre de particules pour p
-T = 60 # nombre d'itérations
-h = 0.003 # stepsize gradient descent
+n = 200 # nombre de particules pour q
+m = 200 # nombre de particules pour p
+T = 100 # nombre d'itérations
+h = 0.006 # stepsize gradient descent
 eps = 0.0001
 alpha = 0.01
 
 
-config_y = lambda : gy.shape("oiseau.jpg",m)
+config_y = lambda : gy.shape("images/etoile.jpg",m)
 
 
 
@@ -50,7 +51,7 @@ Packy = [Ky,Ly,V]
 #### DIVERGENCE ####
 J = lambda x : dv.KKL(x, y, k, Packy, alpha) 
 #dJ = lambda x : np.array([dv.WGrad_KKL(x[i],x, y, k, dk, Packy, alpha, sigma) for i in range(n)])
-dJ = lambda x : dv.WGrad_KKL(x, y, k, dk, Packy, alpha, sigma) 
+dJ = lambda x : dv.WGrad_KKL2(x, y, k, dk, Packy, alpha, sigma) 
 
 
 
@@ -59,8 +60,9 @@ dJ = lambda x : dv.WGrad_KKL(x, y, k, dk, Packy, alpha, sigma)
 ###########################################
 
 
-
+t0 = time.time()
 X,l_J,Grad = gd.gradient_descent(J, dJ, x0, h, eps, T)
+print(time.time()-t0)
 #cProfile.run('gd.gradient_descent(J, dJ, x0, h, eps, T)')
 
 ############################
