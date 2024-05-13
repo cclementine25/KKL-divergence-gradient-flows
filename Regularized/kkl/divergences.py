@@ -1,34 +1,8 @@
+import sys
+sys.path.append('C:/Users/cleme/DOC/Annee_2023_2024/code/Regularized/kkl')
 import numpy as np
 import scipy.stats as scs
-import kkl.kernels as kl
-
-
-######## MMD ##########
-
-def MMD(x,y,k):
-    n = len(x)
-    Kxx = np.array([[k(x[i],x[j]) for i in range(n)] for j in range(n)])
-    Kyy = np.array([[k(y[i],y[j]) for i in range(n)] for j in range(n)])
-    Kxy = np.array([[k(x[i],y[j]) for i in range(n)] for j in range(n)])
-    A = 1/((n-1)*n) * (np.sum(Kxx) - np.sum(np.diag(Kxx)))
-    C = 1/((n-1)*n) * (np.sum(Kyy) - np.sum(np.diag(Kyy)))
-    B = 1/n**2* np.sum(Kxy)
-    return A - B + C
-
-
-#gradient in x of MMD 
-def grad_MMD(x,y,k,dk):
-    d = len(x[0])
-    n = len(x)
-    m = len(y)
-    dKx = np.array([[dk(x[i],x[j]) for j in range(n)] for i in range(n)])
-    dKx[:,:,0] = dKx[:,:,0] - np.diag(np.diag(dKx[:,:,0]))
-    dKx[:,:,1] = dKx[:,:,1] - np.diag(np.diag(dKx[:,:,1]))
-    dKy = np.array([[dk(x[i],y[j]) for j in range(m)] for i in range(n)])
-    R = np.zeros((n,d))
-    R[:,0] = 2/(n * (n-1)) * dKx[:,:,0] @ np.ones(n) - 2/m**2 * dKy[:,:,0] @ np.ones(m)
-    R[:,1] = 2/(n * (n-1)) * dKx[:,:,1] @ np.ones(n) - 2/m**2 * dKy[:,:,1] @ np.ones(m)
-    return R
+import kernels as kl
 
 
 
@@ -44,7 +18,6 @@ def log_ou_0(t):
 
 
 ####### KKL ########
-
 
 def KKL(x,y,k,Packy,alpha):
     n = len(x)
@@ -115,6 +88,14 @@ def energy_distance(x,y):
     YY = np.linalg.norm((y[:,None] - y[None,:]),axis = 2)
     XY = np.linalg.norm((x[:,None] - y[None,:]),axis = 2)
     return -np.mean(XX) - np.mean(YY) + 2 * np.mean(XY)
+
+def KL_gauss(mux,Sigmax,muy,Sigmay):
+    d = len(mux)
+    detx = np.linalg.det(Sigmax)
+    dety = np.linalg.det(Sigmay)
+    print((mux-muy).T @ np.linalg.inv(Sigmay) @ (mux-muy))
+    print(np.trace(np.linalg.inv(Sigmay) @ Sigmax))
+    return 1/2 * (np.log(dety/detx) - d + (mux-muy) @ np.linalg.inv(Sigmay) @ (mux-muy) + np.trace(np.linalg.inv(Sigmay) @ Sigmax))
     
     
     
