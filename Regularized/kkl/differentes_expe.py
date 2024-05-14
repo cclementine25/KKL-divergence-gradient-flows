@@ -15,8 +15,8 @@ m = 30 #nombre de particules pour q
 alpha = 0.1
 
 ########## EXPE ##########
-expe_var_mu = False
-expe_var_n = True
+expe_var_mu = True
+expe_var_n = False
 linesearch = False
 test_lipschitz = False
 expe_var_alpha = False
@@ -64,7 +64,7 @@ Packy = [Ky,Ly,V]
 
 
 J = lambda x : dv.KKL(x, y, k,Packy,alpha) 
-dJ = lambda x : np.array([dv.WGrad_KKL(x[i],x, y,k, dk,Packy,alpha,sigma) for i in range(n)])
+dJ = lambda x : np.array([dv.WGrad_KKL(x, y,k, dk,Packy,alpha,sigma) for i in range(n)])
 
 
 """ Here we plot two gaussian distributions with same variance and
@@ -89,7 +89,7 @@ if expe_var_mu:
         #mmd.append(dv.MMD(X,y,k))
         kkl.append(dv.KKL(X,y,k,Packy,alpha))
         dkkl.append(np.linalg.norm(dJ(X)))
-        cProfile.run('dJ(X)')
+        #cProfile.run('dJ(X)')
         axs[j//4,j%4].scatter(y[:,0],y[:,1],color = "blue")
         axs[j//4,j%4].scatter(X[:,0],X[:,1],color = "red")
         print(j)

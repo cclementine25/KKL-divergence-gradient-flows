@@ -39,7 +39,7 @@ def KKL(x,y,k,Packy,alpha):
     A = np.concatenate([np.concatenate([1/alpha * np.identity(n), np.zeros((n,m))],axis = 1),np.concatenate([np.zeros((m,n)),np.zeros((m,m))],axis = 1)],axis = 0)
                 
     Trxx = np.sum(Lx * log_ou_0(Lx))
-    Trxy = np.trace(A @ W.T @ np.diag(Lz * log_ou_0(Lz)) @ W) #K @ Klog)
+    Trxy = np.trace(A @ W.T @ np.diag(Lz * log_ou_0(Lz)) @ W) 
     return Trxx - Trxy 
 
 
