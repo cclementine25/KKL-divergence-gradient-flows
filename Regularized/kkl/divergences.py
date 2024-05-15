@@ -99,6 +99,14 @@ def KL_gauss(mux,Sigmax,muy,Sigmay):
     
     
     
-    
+def MMD(x,y,k):
+    n = len(x)
+    Kxx = k(x,x)
+    Kyy = k(y,y)
+    Kxy = k(x,y)
+    A = 1/((n-1)*n) * (np.sum(Kxx) - np.sum(np.diag(Kxx)))
+    C = 1/((n-1)*n) * (np.sum(Kyy) - np.sum(np.diag(Kyy)))
+    B = 1/n**2* np.sum(Kxy)
+    return A - B + C
 
 
