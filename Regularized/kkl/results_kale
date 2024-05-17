@@ -1,8 +1,8 @@
 _gf_default_kwargs,_kale_default_kwargs,results
 20,,
-<function <lambda> at 0x00000257AA1977E0>,,
+<function <lambda> at 0x00000257BDAEA2A0>,,
 1,,
-<function _get_shapes_data at 0x00000257AA197560>,,
+<function _get_shapes_data at 0x00000257B958BF60>,,
 {},,
 <function gaussian_kernel at 0x00000257A871BA60>,,
 {'sigma': 0.01},,
@@ -18,7 +18,7 @@ _gf_default_kwargs,_kale_default_kwargs,results
 ,cd,
 ,"{'dual_gap_tol': 0.05, 'buffer_size': 1000, 'max_iter': 20}",
 ,True,
-,,"{'args': {'max_iter': 100, 'lr': 0.001, 'random_seed': 20, 'noise_level_callback': <function <lambda> at 0x00000257AA1977E0>, 'num_noisy_averages': 1, 'generator': <function _get_shapes_data at 0x00000257AA197560>, 'generator_kwargs': {}, 'kernel': <function gaussian_kernel at 0x00000257A871BA60>, 'kernel_kwargs': {'sigma': 0.01}, 'loss': <function kale_penalized at 0x00000257AA1968E0>, 'loss_kwargs': {'lambda_': 0.001, 'inner_max_iter': 800, 'inner_tol': 1e-08, 'inner_a': 0.4, 'inner_b': 0.8, 'inplace': False, 'input_check': True, 'dual_gap_tol': 0.05, 'optimization_method': 'cd', 'optimizer_kwargs': {'dual_gap_tol': 0.05, 'buffer_size': 1000, 'max_iter': 20}, 'online': True}, 'loss_first_variation': <function kale_penalized_first_variation at 0x00000257AA196A20>}, 'X': array([[ 0.41, -0.25],
+,,"{'args': {'max_iter': 100, 'lr': 0.001, 'random_seed': 20, 'noise_level_callback': <function <lambda> at 0x00000257BDAEA2A0>, 'num_noisy_averages': 1, 'generator': <function _get_shapes_data at 0x00000257B958BF60>, 'generator_kwargs': {}, 'kernel': <function gaussian_kernel at 0x00000257A871BA60>, 'kernel_kwargs': {'sigma': 0.01}, 'loss': <function kale_penalized at 0x00000257AA1968E0>, 'loss_kwargs': {'lambda_': 0.001, 'inner_max_iter': 800, 'inner_tol': 1e-08, 'inner_a': 0.4, 'inner_b': 0.8, 'inplace': False, 'input_check': True, 'dual_gap_tol': 0.05, 'optimization_method': 'cd', 'optimizer_kwargs': {'dual_gap_tol': 0.05, 'buffer_size': 1000, 'max_iter': 20}, 'online': True}, 'loss_first_variation': <function kale_penalized_first_variation at 0x00000257AA196A20>}, 'X': array([[ 0.41, -0.25],
        [-0.94,  0.42],
        [-0.83,  0.35],
        [ 0.7 ,  0.26],
@@ -10990,7 +10990,7 @@ _gf_default_kwargs,_kale_default_kwargs,results
        0.00305439, 0.00163421, 0.00109867, 0.00326303, 0.00058885,
        0.00466981, 0.0057081 , 0.00292093, 0.00039124, 0.0009945 ,
        0.0025176 , 0.00080914, 0.00374321, 0.00372966, 0.00252965]), 'lambda_': 0.001}]}"
-,,"{'args': {'max_iter': 100, 'lr': 1, 'random_seed': 20, 'noise_level_callback': <function <lambda> at 0x00000257AA1977E0>, 'num_noisy_averages': 1, 'generator': <function _get_shapes_data at 0x00000257AA197560>, 'generator_kwargs': {}, 'kernel': <function gaussian_kernel at 0x00000257A871BA60>, 'kernel_kwargs': {'sigma': 0.01}, 'loss': <function kale_penalized at 0x00000257AA1968E0>, 'loss_kwargs': {'lambda_': 10000, 'inner_max_iter': 800, 'inner_tol': 1e-08, 'inner_a': 0.4, 'inner_b': 0.8, 'inplace': False, 'input_check': True, 'dual_gap_tol': 0.05, 'optimization_method': 'cd', 'optimizer_kwargs': {'dual_gap_tol': 0.05, 'buffer_size': 1000, 'max_iter': 20}, 'online': True}, 'loss_first_variation': <function kale_penalized_first_variation at 0x00000257AA196A20>}, 'X': array([[ 0.41, -0.25],
+,,"{'args': {'max_iter': 100, 'lr': 1, 'random_seed': 20, 'noise_level_callback': <function <lambda> at 0x00000257BDAEA2A0>, 'num_noisy_averages': 1, 'generator': <function _get_shapes_data at 0x00000257B958BF60>, 'generator_kwargs': {}, 'kernel': <function gaussian_kernel at 0x00000257A871BA60>, 'kernel_kwargs': {'sigma': 0.01}, 'loss': <function kale_penalized at 0x00000257AA1968E0>, 'loss_kwargs': {'lambda_': 10000, 'inner_max_iter': 800, 'inner_tol': 1e-08, 'inner_a': 0.4, 'inner_b': 0.8, 'inplace': False, 'input_check': True, 'dual_gap_tol': 0.05, 'optimization_method': 'cd', 'optimizer_kwargs': {'dual_gap_tol': 0.05, 'buffer_size': 1000, 'max_iter': 20}, 'online': True}, 'loss_first_variation': <function kale_penalized_first_variation at 0x00000257AA196A20>}, 'X': array([[ 0.41, -0.25],
        [-0.94,  0.42],
        [-0.83,  0.35],
        [ 0.7 ,  0.26],
