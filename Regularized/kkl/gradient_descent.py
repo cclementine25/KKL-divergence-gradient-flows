@@ -13,8 +13,8 @@ def gradient_descent(J,dJ,x0,h,eps,n_it_max):
     liste_J = []
     Grad = []
     while np.linalg.norm(grad) > eps and i < n_it_max:
-        if i%10 == 0:
-            print("T = " + str(i))
+        #if i%10 == 0:
+           # print("T = " + str(i))
         Grad.append(np.linalg.norm(grad))
         liste_J.append(J_val)
         grad = dJ(x)
