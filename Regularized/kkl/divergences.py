@@ -8,24 +8,17 @@ import kernels as kl
 
 def log_ou_0(t):
     return np.where(t > 0, np.log(t), 0.)
-    # t_log = np.zeros(len(t))
-    # for i in range(len(t)):
-    #     if t[i] > 0:
-    #         t_log[i] = np.log(t[i])
-    # return t_log
-
 
 
 
 ####### KKL ########
 
-def KKL(x,y,k,Packy,alpha):
+def KKL(x,y,k,Ky,alpha):
     n = len(x)
     m = len(y) 
     Kx = 1/n * k(x,x)
     
-    
-    Ky = Packy[0] 
+     
     Kxy = k(x,y) 
     Lx,U = np.linalg.eig(Kx)
     U = np.real(U).T
@@ -44,7 +37,7 @@ def KKL(x,y,k,Packy,alpha):
 
 
     
-def WGrad_KKL(x,y,k,dk,Packy,alpha,sigma):
+def WGrad_KKL(x,y,k,dk,Ky,alpha,sigma):
     n = len(x)
     m = len(y)
     
@@ -55,7 +48,6 @@ def WGrad_KKL(x,y,k,dk,Packy,alpha,sigma):
     U = U.T
     logLx = log_ou_0(Lx)
     
-    Ky = Packy[0] 
     Kxy = k(x,y)
     
     K = np.concatenate([np.concatenate([alpha * Kx, np.sqrt(alpha*(1-alpha)/(n*m)) *Kxy],axis = 1),np.concatenate([np.sqrt(alpha*(1-alpha)/(n*m)) *Kxy.transpose(),(1-alpha)* Ky],axis = 1)],axis = 0)
@@ -79,7 +71,7 @@ def WGrad_KKL(x,y,k,dk,Packy,alpha,sigma):
     Trx = 2 * np.einsum('nk,nkj->nj',(U_w @ U.T @ np.diag(logLx/Lx) @ U),DU_w )
     Trz = 2 * np.einsum('nk,nkj->nj',(VW @ (np.diag(logLz/(Lz+1e-9)) + (logLz[:,None] - logLz[None,:]) / (Lz[:,None] - Lz[None,:] + np.identity(n+m) + 1e-9 * np.ones((n+m,n+m))) * (W[:, :n] @ W.T[:n,:]) + np.diag(np.linalg.norm(W[:,:n],axis =1)**2 / Lz))), DVW) # + np.diag(np.linalg.norm(W[:,:n],axis =1)**2 / Lz) + ((logLz[:,None] - logLz[None,:]) / (Lz[:,None] - Lz[None,:] + np.identity(n+m)) * (W[:, :n] @ W.T[:n,:]))) @ DVW
     T = Trx - Trz
-    return  T #- Tr3 - Tr4 
+    return  T 
 
       
 
